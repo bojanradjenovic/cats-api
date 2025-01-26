@@ -19,6 +19,8 @@ def init_delete_routes(app):
                 file_path = os.path.join(UPLOAD_FOLDER, filename)
                 try:
                     os.remove(file_path)
+                    db.session.delete(image)
+                    db.session.commit()
                     return jsonify({"message": "Cat successfully deleted", "id": id}), 200
                 except OSError as e:
                     return jsonify({"error": f"Failed to delete cat: {str(e)}"}), 500

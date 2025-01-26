@@ -38,7 +38,7 @@ def init_create_routes(app):
             filename = f"{file_id}.{file_extension}"
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
-            image = Image(filename=filename, user_id=user_id)
+            image = Image(id=file_id, filename=filename, user_id=user_id)
             db.session.add(image)
             db.session.commit()
             return jsonify({"message": "Cat successfully uploaded", "id": file_id}), 201
