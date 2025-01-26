@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
 from werkzeug.utils import secure_filename
+from models import db, Image
 UPLOAD_FOLDER = 'cats'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -31,11 +32,15 @@ def init_create_routes(app):
         if file.filename == '':
             return jsonify({"error": "No file selected for uploading"}), 400
         if file and allowed_file(file.filename):  
+            user_id = get_jwt_identity()
             file_id = next_id()
             file_extension = secure_filename(file.filename).rsplit('.', 1)[1].lower()
             filename = f"{file_id}.{file_extension}"
             file_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(file_path)
+            image = Image(filename=filename, user_id=user_id)
+            db.session.add(image)
+            db.session.commit()
             return jsonify({"message": "Cat successfully uploaded", "id": file_id}), 201
         else:
             return jsonify({"error": "Allowed file types are png, jpg, jpeg, gif"}), 400
