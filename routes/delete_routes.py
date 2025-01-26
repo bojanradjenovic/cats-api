@@ -1,10 +1,12 @@
 import os
 from flask import jsonify
+from flask_jwt_extended import jwt_required
 
 UPLOAD_FOLDER = 'cats'
 
 def init_delete_routes(app):
     @app.route('/delete/<int:id>', methods=['DELETE'])
+    @jwt_required()
     def delete_cat_image(id):
         for filename in os.listdir(UPLOAD_FOLDER):
             if filename.startswith(f"{id}."):
