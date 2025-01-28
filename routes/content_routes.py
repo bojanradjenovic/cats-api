@@ -13,7 +13,7 @@ def init_content_routes(app):
             return jsonify({"error": "User not found"}), 404
 
         images = [
-            {"id": image.id, "filename": image.filename, "upload_time": image.upload_time}
+            {"id": image.id, "filename": image.filename, "name": image.name, "description": image.description, "upload_time": image.upload_time}
             for image in user.images
         ]
         return jsonify({"images": images}), 200
@@ -27,7 +27,7 @@ def init_content_routes(app):
 
         # Return a list of image details
         images_data = [
-            {"id": image.id, "filename": image.filename, "user_id": image.user_id}
+            {"id": image.id, "filename": image.filename, "name": image.name, "description": image.description, "user_id": image.user_id}
             for image in images
         ]
         return jsonify(images_data), 200
@@ -42,7 +42,7 @@ def init_content_routes(app):
             return jsonify({"error": "Image not found"}), 404
 
         # Return image details and serve the file
-        image_data = {"id": image.id, "filename": image.filename, "user_id": image.user_id}
+        image_data = {"id": image.id, "filename": image.filename, "name": image.name, "description": image.description, "user_id": image.user_id}
         return jsonify(image_data), 200
 
     @app.route('/images/<int:id>/file', methods=['GET'])
