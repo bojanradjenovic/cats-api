@@ -1,3 +1,4 @@
 {
-    "jwt_secret_key": "jwt_secret_key"
+    "jwt_secret_key": "jwt_secret_key",
+    "upload_folder": "upload_folder"
 }

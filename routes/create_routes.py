@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import json
 import os
 from werkzeug.utils import secure_filename
 from models import db, Image
-
-UPLOAD_FOLDER = 'cats'
+with open("config.json") as config_file:
+    config = json.load(config_file)
+    UPLOAD_FOLDER = config.get("upload_folder")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 ID_FILE = os.path.join(UPLOAD_FOLDER, 'id.txt')
@@ -31,28 +33,23 @@ def init_create_routes(app):
     @app.route('/upload', methods=['POST'])
     @jwt_required()
     def upload_cat_image():
-        # Check if file is present in the request
         if 'file' not in request.files:
             return jsonify({"error": "No file part in the request"}), 400
         file = request.files['file']
         if file.filename == '':
             return jsonify({"error": "No file selected for uploading"}), 400
 
-        # Check if the file is allowed
         if not allowed_file(file.filename):
             return jsonify({"error": "Allowed file types are png, jpg, jpeg, gif"}), 400
 
-        # Get additional data (name and description) from the request body
         name = request.form.get('name')
         description = request.form.get('description')
 
-        # Validate the additional fields
         if not name:
             return jsonify({"error": "Name is required"}), 400
         if not description:
             return jsonify({"error": "Description is required"}), 400
 
-        # Get user ID from JWT
         user_id = get_jwt_identity()
 
         # Generate a unique ID for the image
@@ -61,7 +58,6 @@ def init_create_routes(app):
         filename = f"{file_id}.{file_extension}"
         file_path = os.path.join(UPLOAD_FOLDER, filename)
 
-        # Save the file to the upload folder
         file.save(file_path)
 
         # Save image details to the database

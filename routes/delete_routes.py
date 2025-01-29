@@ -1,8 +1,11 @@
 import os
 from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import json
 from models import db, Image
-UPLOAD_FOLDER = 'cats'
+with open("config.json") as config_file:
+    config = json.load(config_file)
+    UPLOAD_FOLDER = config.get("upload_folder")
 
 def init_delete_routes(app):
     @app.route('/delete/<int:id>', methods=['DELETE'])
