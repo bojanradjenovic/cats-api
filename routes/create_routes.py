@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 from models import db, Image
 from werkzeug.datastructures import FileStorage
 from flask_restx import Namespace, Resource, fields, reqparse
+from PIL import Image as PILImage
+import io
 
 create_ns = Namespace("create", description="Image upload endpoints")
 
@@ -48,7 +50,21 @@ def next_id():
     with open(ID_FILE, 'w') as f:
         f.write(str(id + 1))
     return id + 1
+def strip_metadata(image_file):
+    try:
+        img = PILImage.open(image_file)
+        data = list(img.getdata())
 
+        img_no_metadata = PILImage.new(img.mode, img.size)
+        img_no_metadata.putdata(data)
+
+        temp_image = io.BytesIO()
+        img_no_metadata.save(temp_image, format=img.format)
+        temp_image.seek(0)
+        return temp_image
+    except Exception as e:
+        print(f"Error stripping metadata: {e}")
+        return image_file
 def init_create_routes(app, api):
     api.add_namespace(create_ns)
 
@@ -87,8 +103,10 @@ def init_create_routes(app, api):
             file_extension = secure_filename(file.filename).rsplit('.', 1)[1].lower()
             filename = f"{file_id}.{file_extension}"
             file_path = os.path.join(UPLOAD_FOLDER, filename)
+            cleaned_file = strip_metadata(file)
+            with open(file_path, "wb") as f:
+                f.write(cleaned_file.read())
 
-            file.save(file_path)
 
             new_image = Image(
                 id=file_id,
